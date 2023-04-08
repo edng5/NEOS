@@ -1,4 +1,5 @@
 # NEOS (Neuro Evolution Organism Simulator)
+# by Edward Ng (2023)
 
 Evolution simulator using NEAT algorithm. Tries to observe a population
 of simple organisms (NEOS) learning to eat food. The fittest of the generation
