@@ -10,14 +10,19 @@ from food import *
 from evo_sim import *
 from utils import *
 
+import random
+
 settings = {}
 
 # Evolution Settings
 settings['pop_size'] = 50       # number of organisms
 settings['food_num'] = 100      # number of food particles
-settings['gens'] = 10           # number of generations 50
+settings['gens'] = 2            # number of generations 50
 settings['elitism'] = 0.20      # elitism (selection bias)
 settings['mutate'] = 0.10       # mutation rate
+settings['mature'] = 200        # time for organism to mature
+settings['lifespan_lower'] = 400      # starting lifespan lower bound
+settings['lifespan_upper'] = 600      # starting lifespan upper bound
 
 # Simulation Setitngs
 settings['gen_time'] = 50       # generation length         (seconds) 100
@@ -40,7 +45,8 @@ settings['outer_nodes'] = 2          # number of output nodes
 
 
 def main(settings: dict) -> None:
-    '''Run simulation which displays stats and saves the animation of the simulation.
+    '''
+    Run simulation which displays stats and saves the animation of the simulation.
     '''
     # init food to the environment
     foods = []
@@ -53,20 +59,31 @@ def main(settings: dict) -> None:
         wih_init = np.random.uniform(-1, 1, (settings['hidden_nodes'], settings['inner_nodes']))     # mlp weights (input -> hidden)
         who_init = np.random.uniform(-1, 1, (settings['outer_nodes'], settings['hidden_nodes']))     # mlp weights (hidden -> output)
 
-        organisms.append(NEOS(settings, 'lightgreen', wih_init, who_init, name='gen[x]-org['+str(i)+']'))
+        lifespan = random.randint(settings['lifespan_lower'], settings['lifespan_upper']) 
+        organisms.append(NEOS(settings, 'lightgreen', lifespan, wih_init, who_init, name='gen[0]-org['+str(i)+']'))
 
     # Loop through each generation
     for gen in range(0, settings['gens']):
 
         # simulation
+        print("SIMULATING GEN "+ str(gen)+". PLEASE WAIT...")
+
         fig, ax = plt.subplots()
         fig.set_size_inches(9.6, 5.4)
         ax.set_facecolor(plt.cm.Blues(.2))
+        
         organisms = simulate(settings, organisms, foods, gen, fig, ax)
 
+        # organisms died off
+        if len(organisms) == 0:
+            print("DONE SIMULATING GEN "+ str(gen)+".")
+            break
+
         # add next generation of organisms
-        organisms, stats = evolve(settings, organisms, gen)
+        organisms, stats = evolve_gen(settings, organisms, gen)
         print('> GEN:',gen,'BEST:',stats['BEST'],'AVG:',stats['AVG'],'WORST:',stats['WORST'])
+
+        print("DONE SIMULATING GEN "+ str(gen)+".")
 
 
 if __name__ == "__main__":
