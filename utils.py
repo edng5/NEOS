@@ -1,6 +1,7 @@
 from math import atan2
 from math import degrees
 from math import sqrt
+from math import floor
 from random import randint
 
 def dist(x1,y1,x2,y2):
@@ -38,8 +39,26 @@ def pick_color(gen):
     :return: string of color picked.
     '''
     color_mapping = {0: 'lightgreen', 1: 'forestgreen', 2: 'darkgreen', 3: 'mediumseagreen', 4: 'mediumaquamarine', 5: 'mintcream'}
-    if not gen in color_mapping:
-        random_num = randint(0, 5) #148
-        return color_mapping[random_num]
-    return color_mapping[gen]
+    # if not gen in color_mapping:
+    #     random_num = randint(0, 5) #148
+    #     return color_mapping[random_num]
+    # return color_mapping[gen]
+    random_num = randint(0, 5)
+    return color_mapping[random_num]
     
+
+def boundary_fitness(organisms, percentage) -> int:
+    '''
+    Find boundary fitness rank for top percentile of organisms.
+    :param organisms: list of organisms.
+    :param percentage: the percentage of elite organisms.
+    :return: Lowest fitness level of top organisms
+    '''
+    fitness_list = []
+    for organism in organisms:
+        fitness_list.append(organism.fitness)
+    fitness_list.sort(reverse=True)
+    idx = int(floor(len(fitness_list) * percentage)) - 1
+    if idx < 0:
+        return fitness_list[0]
+    return fitness_list[idx]
