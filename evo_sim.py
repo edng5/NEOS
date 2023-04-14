@@ -13,7 +13,7 @@ from random import random
 from random import sample
 from random import uniform
 
-def evolve(settings: dict, organisms_old: list, gen: int) -> tuple:
+def evolve_gen(settings: dict, organisms_old: list, gen: int) -> tuple:
     ''' 
     Evolve next generation of NEOS by crossing over genes
     and then mutating them.
@@ -86,9 +86,60 @@ def evolve(settings: dict, organisms_old: list, gen: int) -> tuple:
         # Mutate: Color
         color_new = pick_color(gen)
 
-        organisms_new.append(NEOS(settings, color=color_new, wih=wih_new, who=who_new, name='gen['+str(gen)+']-org['+str(w)+']'))
+        # Mutate: lifespan
+        lifespan = random.randint(settings['lifespan_lower'], settings['lifespan_upper'])
+
+        organisms_new.append(NEOS(settings, color=color_new, lifespan=lifespan, wih=wih_new, who=who_new, name='gen['+str(gen)+']-org['+str(w)+']'))
 
     return organisms_new, stats
+
+
+def reproduce(settings, organisms, organism1, organism2, gen, count) -> None:
+    '''
+    Reproduction of two organisms to create an organism with crossed 
+    genes of the parents.
+    :param settings: dictionary of simultation settings
+    :param organisms: list of organisms 
+    :param organism1: parent 1
+    :param organism2: parent 2
+    :param gen: current generation
+    :param count: new organism count
+    :return: None
+    '''
+    # Crossover
+    crossover_weight = random()
+    wih_new = (crossover_weight * organism1.wih) + ((1 - crossover_weight) * organism2.wih)
+    who_new = (crossover_weight * organism1.who) + ((1 - crossover_weight) * organism2.who)
+
+    # Mutation
+    mutate = random()
+    if mutate <= settings['mutate']:
+
+        # Pick which weight to mutate
+        mat_pick = randint(0,1)
+
+        # Mutate: WIH Weights
+        if mat_pick == 0:
+            index_row = randint(0,settings['hidden_nodes']-1)
+            wih_new[index_row] = wih_new[index_row] * uniform(0.9, 1.1)
+            if wih_new[index_row] >  1: wih_new[index_row] = 1
+            if wih_new[index_row] < -1: wih_new[index_row] = -1
+
+        # Mutate: WHO Weights
+        if mat_pick == 1:
+            index_row = randint(0,settings['outer_nodes']-1)
+            index_col = randint(0,settings['hidden_nodes']-1)
+            who_new[index_row][index_col] = who_new[index_row][index_col] * uniform(0.9, 1.1)
+            if who_new[index_row][index_col] >  1: who_new[index_row][index_col] = 1
+            if who_new[index_row][index_col] < -1: who_new[index_row][index_col] = -1
+
+        # Mutate: Color
+        color_new = pick_color(gen)
+
+        # Mutate: lifespan
+        lifespan = random.randint(settings['lifespan_lower'], settings['lifespan_upper'])
+
+        organisms.append(NEOS(settings, color=color_new, lifespan=lifespan, wih=wih_new, who=who_new, name='gen['+str(gen)+']-org['+str(count)+']'))
 
 
 def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax):
@@ -108,6 +159,7 @@ def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax):
 
     
     total_time_steps = int(settings['gen_time'] / settings['dt'])
+    count = 0
 
     # Save all frames into an animation
     with writer.saving(fig, 'gen_'+str(gen)+'.gif', 100):
@@ -145,6 +197,30 @@ def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax):
                         organism.d_food = food_org_dist
                         organism.r_food = calc_heading(organism, food)
 
+            # Calculate fitness threshold
+            threshold = boundary_fitness(organisms, settings['elitism'])
+
+            # Organism reproduction
+            for organism1 in organisms:
+                for organism2 in organisms:
+                    if organism1 != organism2:
+                        org_org_dist = dist(organism1.x, organism1.y, organism2.x, organism2.y)
+
+                        if org_org_dist <= 0.075:
+                            if organism1.fitness > threshold and organism2.fitness > threshold and organism1.age > settings['mature'] and organism2.age > settings['mature']:
+                                reproduce(settings, organisms, organism1, organism2, gen, count)
+                                count += 1
+            
+            # Old age organisms die off
+            for organism in organisms:
+                if organism.too_old():
+                    organisms.remove(organism)
+
+            # End simulation if all organisms are gone        
+            if len(organisms) == 0:
+                print("GEN "+str(gen)+" DID NOT SURVIVE...")
+                break
+
             # Get organism response
             for organism in organisms:
                 organism.think()
@@ -154,6 +230,12 @@ def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax):
                 organism.update_r(settings)
                 organism.update_vel(settings)
                 organism.update_pos(settings)
+                organism.update_age()
+
+            # Too many NEOS
+            if count > 100:
+                print("OVERPOPULATION - ENDING SIM...")
+                break
 
             # Grab current plot to compile into an animation
             writer.grab_frame()
