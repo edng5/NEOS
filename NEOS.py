@@ -1,5 +1,7 @@
 import numpy as np
 
+from utils import *
+
 from math import atan2
 from math import cos
 from math import degrees
@@ -13,7 +15,7 @@ class NEOS():
     '''
     Class for simple organisms called NEOS.
     '''
-    def __init__(self, settings, color='lightgreen', wih=None, who=None, name=None):
+    def __init__(self, settings, color='lightgreen', lifespan=120, wih=None, who=None, name=None):
 
         self.x = uniform(settings['x_min'], settings['x_max'])  # position (x)
         self.y = uniform(settings['y_min'], settings['y_max'])  # position (y)
@@ -25,7 +27,9 @@ class NEOS():
         self.d_food = 100   # distance to nearest food
         self.r_food = 0     # orientation to nearest food
         self.fitness = 0    # fitness (food count)
-        self.color = color
+        self.color = color  # color
+        self.age = 0        # age
+        self.lifespan = lifespan # lifespan
 
         self.wih = wih
         self.who = who
@@ -47,6 +51,14 @@ class NEOS():
         self.nn_dv = float(out[0])   # [-1, 1]  (accelerate=1, deaccelerate=-1)
         self.nn_dr = float(out[1])   # [-1, 1]  (left=1, right=-1)
 
+
+    def too_old(self) -> bool:
+        '''
+        Compare age with lifespan.
+        :return: True if organism is too old.
+        '''
+        return self.age >= self.lifespan
+    
 
     def update_r(self, settings: dict) -> None:
         '''
@@ -79,3 +91,11 @@ class NEOS():
         dy = self.v * sin(radians(self.r)) * settings['dt']
         self.x += dx
         self.y += dy
+
+
+    def update_age(self) -> None:
+        '''
+        Update the NEOS age.
+        :return: None
+        '''
+        self.age += 1
