@@ -82,6 +82,8 @@ def get_stats(organisms, old_organisms):
 
         stats['SUM'] += organism.fitness
 
+    stats['COUNT'] = len(all_organisms)
+
     stats['AVG'] = stats['SUM'] / stats['COUNT']
 
     return stats
