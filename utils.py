@@ -72,6 +72,10 @@ def get_stats(organisms, old_organisms):
     '''
     # Get stats for current generation
     stats = defaultdict(int)
+
+    stats['SURVIVED'] = len(organisms)
+    stats['DIED'] = len(old_organisms)
+
     all_organisms = organisms + old_organisms
     for organism in all_organisms:
         if organism.fitness > stats['BEST'] or stats['BEST'] == 0:
