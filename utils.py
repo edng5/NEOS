@@ -4,6 +4,8 @@ from math import sqrt
 from math import floor
 from random import randint
 
+from collections import defaultdict
+
 def dist(x1,y1,x2,y2):
     '''
     Calculate distance.
@@ -62,3 +64,24 @@ def boundary_fitness(organisms, percentage) -> int:
     if idx < 0:
         return fitness_list[0]
     return fitness_list[idx]
+
+
+def get_stats(organisms, old_organisms):
+    '''
+    Get stats of simulation.
+    '''
+    # Get stats for current generation
+    stats = defaultdict(int)
+    all_organisms = organisms + old_organisms
+    for organism in all_organisms:
+        if organism.fitness > stats['BEST'] or stats['BEST'] == 0:
+            stats['BEST'] = organism.fitness
+
+        if organism.fitness < stats['WORST'] or stats['WORST'] == 0:
+            stats['WORST'] = organism.fitness
+
+        stats['SUM'] += organism.fitness
+
+    stats['AVG'] = stats['SUM'] / stats['COUNT']
+
+    return stats
