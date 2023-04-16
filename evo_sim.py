@@ -23,18 +23,17 @@ def evolve_gen(settings: dict, organisms_old: list, gen: int) -> list:
     :param sum: number of food eaten from previous gen.
     :returns: list of new organisms.
     '''
-    elitism_num = int(floor(settings['elitism'] * settings['pop_size']))
-    new_orgs = settings['pop_size'] - elitism_num
-
     # Elitism (Keep the best performing organisms)
+    elitism_num = int(floor(settings['elitism'] * len(organisms_old)))
     orgs_sorted = sorted(organisms_old, key=operator.attrgetter('fitness'), reverse=True)
     organisms_new = []
+
     for i in range(0, elitism_num):
         organisms_new.append(NEOS(settings, wih=orgs_sorted[i].wih, who=orgs_sorted[i].who, name=orgs_sorted[i].name))
 
-
     # Generate new organisms
-    for w in range(0, new_orgs):
+    num_new_orgs = settings['pop_size'] - elitism_num
+    for w in range(0, num_new_orgs):
 
         # Selection (Truncation Selection)
         candidates = range(0, elitism_num)
@@ -144,7 +143,7 @@ def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax) ->
     writer = PillowWriter(fps=15, metadata=metadata)
 
     
-    total_time_steps = int(settings['gen_time'] / settings['dt'])
+    total_time_steps = settings['total_time_steps']
     old_organisms = []
     count = 0
 
