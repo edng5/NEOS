@@ -25,6 +25,8 @@ class NEOS():
         self.dv = uniform(-settings['dv_max'], settings['dv_max'])   # dv
 
         self.d_food = 100   # distance to nearest food
+        self.d_org = 100  # distance to nearest food
+        self.r_org = 0  # distance to nearest food
         self.r_food = 0     # orientation to nearest food
         self.fitness = 0    # fitness (food count)
         self.color = color  # color
@@ -43,9 +45,12 @@ class NEOS():
         :returns: None
         '''
         # MLP
-        af = lambda x: np.tanh(x)               # activation function
-        h1 = af(np.dot(self.wih, self.r_food))  # hidden layer
-        out = af(np.dot(self.who, h1))          # output layer
+        act_func = lambda x: np.tanh(x)               # activation function
+        if self.age > self.lifespan*0.75:
+            h1 = act_func(np.dot(self.wih, self.r_org))  # hidden layer
+        else:
+            h1 = act_func(np.dot(self.wih, self.r_food))  # hidden layer
+        out = act_func(np.dot(self.who, h1))          # output layer
 
         # Update dv and dr with MLP response
         self.nn_dv = float(out[0])   # [-1, 1]  (accelerate=1, deaccelerate=-1)
@@ -91,6 +96,15 @@ class NEOS():
         dy = self.v * sin(radians(self.r)) * settings['dt']
         self.x += dx
         self.y += dy
+
+        if self.x < settings['x_min']:
+            self.x = settings['x_min']
+        if self.x > settings['x_max']:
+            self.x = settings['x_max']
+        if self.y < settings['y_min']:
+            self.y = settings['y_min']
+        if self.y > settings['y_max']:
+            self.y = settings['y_max']
 
 
     def update_age(self) -> None:
