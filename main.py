@@ -66,24 +66,27 @@ def main(settings: dict) -> None:
     for gen in range(0, settings['gens']):
 
         # simulation
-        print("SIMULATING GEN "+ str(gen)+". PLEASE WAIT...")
+        print("SIMULATING GEN "+str(gen)+". PLEASE WAIT...")
 
         fig, ax = plt.subplots()
         fig.set_size_inches(9.6, 5.4)
         ax.set_facecolor(plt.cm.Blues(.2))
         
-        organisms, count, sum = simulate(settings, organisms, foods, gen, fig, ax)
+        organisms, old_organisms = simulate(settings, organisms, foods, gen, fig, ax)
+
+        stats = get_stats(organisms, old_organisms)
 
         # organisms died off
         if len(organisms) == 0:
-            print("DONE SIMULATING GEN "+ str(gen)+".\n")
+            print('> GEN:',gen,'BEST:',stats['BEST'],'AVG:',stats['AVG'],'WORST:',stats['WORST'],'TOTAL:',stats['COUNT'])
+            print("DONE SIMULATING GEN "+str(gen)+".\n")
             break
 
         # add next generation of organisms
-        organisms, stats = evolve_gen(settings, organisms, gen, count, sum)
+        organisms = evolve_gen(settings, organisms, gen)
         print('> GEN:',gen,'BEST:',stats['BEST'],'AVG:',stats['AVG'],'WORST:',stats['WORST'],'TOTAL:',stats['COUNT'])
 
-        print("DONE SIMULATING GEN "+ str(gen)+".\n")
+        print("DONE SIMULATING GEN "+str(gen)+".\n")
 
 
 if __name__ == "__main__":
