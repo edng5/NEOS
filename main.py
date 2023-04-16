@@ -15,18 +15,21 @@ from random import randint
 settings = {}
 
 # Evolution Settings
-settings['pop_size'] = 50       # number of organisms
+settings['pop_size'] = 50       # initial number of organisms
 settings['food_num'] = 100      # number of food particles
 settings['gens'] = 10            # number of generations 50
 settings['elitism'] = 0.20      # elitism (selection bias)
 settings['mutate'] = 0.10       # mutation rate
-settings['mature'] = 200        # time for organism to mature
-settings['lifespan_lower'] = 500      # starting lifespan lower bound
-settings['lifespan_upper'] = 600      # starting lifespan upper bound
+settings['mature'] = 200        # time for organism to mature (in total time steps)
+settings['lifespan_lower'] = 500      # starting lifespan lower bound (in total time steps)
+settings['lifespan_upper'] = 600      # starting lifespan upper bound (in total time steps)
 
 # Simulation Setitngs
-settings['gen_time'] = 50       # generation length         (seconds) 100
+settings['gen_time'] = 50       # generation length         (seconds)
 settings['dt'] = 0.04           # simulation time step      (dt)
+
+settings['total_time_steps'] = int(settings['gen_time'] / settings['dt']) # total time steps of simulation (1250)
+
 settings['dr_max'] = 720        # max rotational speed      (degrees per second)
 settings['v_max'] = 0.5         # max velocity              (units per second)
 settings['dv_max'] =  0.25      # max acceleration (+/-)    (units per second^2)
@@ -74,17 +77,18 @@ def main(settings: dict) -> None:
         
         organisms, old_organisms = simulate(settings, organisms, foods, gen, fig, ax)
 
+        
+        # print stats
         stats = get_stats(organisms, old_organisms)
+        print('> GEN:',gen,'BEST:',stats['BEST'],'AVG:',stats['AVG'],'WORST:',stats['WORST'],'TOTAL:',stats['COUNT'])
 
         # organisms died off
         if len(organisms) == 0:
-            print('> GEN:',gen,'BEST:',stats['BEST'],'AVG:',stats['AVG'],'WORST:',stats['WORST'],'TOTAL:',stats['COUNT'])
             print("DONE SIMULATING GEN "+str(gen)+".\n")
             break
 
         # add next generation of organisms
         organisms = evolve_gen(settings, organisms, gen)
-        print('> GEN:',gen,'BEST:',stats['BEST'],'AVG:',stats['AVG'],'WORST:',stats['WORST'],'TOTAL:',stats['COUNT'])
 
         print("DONE SIMULATING GEN "+str(gen)+".\n")
 
