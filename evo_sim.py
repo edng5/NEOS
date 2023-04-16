@@ -13,13 +13,15 @@ from random import random
 from random import sample
 from random import uniform
 
-def evolve_gen(settings: dict, organisms_old: list, gen: int) -> tuple:
+def evolve_gen(settings: dict, organisms_old: list, gen: int, count: int, sum: int) -> tuple:
     ''' 
     Evolve next generation of NEOS by crossing over genes
     and then mutating them.
     :param settings: contains dictionary of simulation config.
     :param organisms_old: contains a list of previous gen organisms.
     :param gen: integer of current generation.
+    :param count: number of organisms from previous gen.
+    :param sum: number of food eaten from previous gen.
     :returns: tuple of new organisms and statistics.
     '''
     elitism_num = int(floor(settings['elitism'] * settings['pop_size']))
@@ -27,6 +29,7 @@ def evolve_gen(settings: dict, organisms_old: list, gen: int) -> tuple:
 
     # Get stats for current generation
     stats = defaultdict(int)
+    stats['SUM'] = sum
     for organism in organisms_old:
         if organism.fitness > stats['BEST'] or stats['BEST'] == 0:
             stats['BEST'] = organism.fitness
@@ -35,7 +38,8 @@ def evolve_gen(settings: dict, organisms_old: list, gen: int) -> tuple:
             stats['WORST'] = organism.fitness
 
         stats['SUM'] += organism.fitness
-        stats['COUNT'] += 1
+
+    stats['COUNT'] = count
 
     stats['AVG'] = stats['SUM'] / stats['COUNT']
 
@@ -87,7 +91,7 @@ def evolve_gen(settings: dict, organisms_old: list, gen: int) -> tuple:
         color_new = pick_color(gen)
 
         # Mutate: lifespan
-        lifespan = random.randint(settings['lifespan_lower'], settings['lifespan_upper'])
+        lifespan = randint(settings['lifespan_lower'], settings['lifespan_upper'])
 
         organisms_new.append(NEOS(settings, color=color_new, lifespan=lifespan, wih=wih_new, who=who_new, name='gen['+str(gen)+']-org['+str(w)+']'))
 
@@ -137,12 +141,12 @@ def reproduce(settings, organisms, organism1, organism2, gen, count) -> None:
         color_new = pick_color(gen)
 
         # Mutate: lifespan
-        lifespan = random.randint(settings['lifespan_lower'], settings['lifespan_upper'])
+        lifespan = randint(settings['lifespan_lower'], settings['lifespan_upper'])
 
         organisms.append(NEOS(settings, color=color_new, lifespan=lifespan, wih=wih_new, who=who_new, name='gen['+str(gen)+']-org['+str(count)+']'))
 
 
-def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax):
+def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax) -> tuple:
     ''' 
     Simulate current generation of NEOS through time steps and
     saving plot frames into an animation.
@@ -152,7 +156,7 @@ def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax):
     :param gen: integer of current generation.
     :param fig: plot figure.
     :param ax: plot ax.
-    :returns: organisms
+    :returns: list of organisms, count of total organisms, sum of foods eaten
     '''
     metadata = dict(title='NEOS', artist='edng5')
     writer = PillowWriter(fps=15, metadata=metadata)
@@ -160,6 +164,7 @@ def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax):
     
     total_time_steps = int(settings['gen_time'] / settings['dt'])
     count = 0
+    sum = 0
 
     # Save all frames into an animation
     with writer.saving(fig, 'gen_'+str(gen)+'.gif', 100):
@@ -185,20 +190,26 @@ def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax):
                     organism.d_food = 100
                     organism.r_food = 0
 
-            # Calculate heading to nearest food
-            for food in foods:
-                for organism in organisms:
-
-                    # Calculate distance to selected food particle
-                    food_org_dist = dist(organism.x, organism.y, food.x, food.y)
-
-                    # Determine if this is the closest food particle
-                    if food_org_dist < organism.d_food:
-                        organism.d_food = food_org_dist
-                        organism.r_food = calc_heading(organism, food)
-
             # Calculate fitness threshold
             threshold = boundary_fitness(organisms, settings['elitism'])
+
+            # Calculate heading to nearest food
+            for food in foods:
+                for organism1 in organisms:
+                    # Calculate distance to selected food particle
+                    food_org_dist = dist(organism1.x, organism1.y, food.x, food.y)
+                    for organism2 in organisms:
+                        # determine to go to food or find mate
+                        if organism1 != organism2:
+                            # Calculate distance to selected organism
+                            org_org_dist = dist(organism1.x, organism1.y, organism2.x, organism2.y)
+                            if organism1.age > organism1.lifespan*0.75 and organism2.fitness > threshold and org_org_dist < organism1.d_org:
+                                organism1.d_org = org_org_dist
+                                organism1.r_org = calc_heading(organism1, organism2)
+                            # Determine if this is the closest food particle
+                            elif food_org_dist < organism1.d_food:
+                                organism1.d_food = food_org_dist
+                                organism1.r_food = calc_heading(organism1, food)
 
             # Organism reproduction
             for organism1 in organisms:
@@ -209,11 +220,14 @@ def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax):
                         if org_org_dist <= 0.075:
                             if organism1.fitness > threshold and organism2.fitness > threshold and organism1.age > settings['mature'] and organism2.age > settings['mature']:
                                 reproduce(settings, organisms, organism1, organism2, gen, count)
+                                organism1.d_org = 100
+                                organism1.r_org = 0
                                 count += 1
             
             # Old age organisms die off
             for organism in organisms:
                 if organism.too_old():
+                    sum += organism.fitness
                     organisms.remove(organism)
 
             # End simulation if all organisms are gone        
@@ -232,8 +246,9 @@ def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax):
                 organism.update_pos(settings)
                 organism.update_age()
 
+
             # Too many NEOS
-            if count > 100:
+            if len(organisms) > 150:
                 print("OVERPOPULATION - ENDING SIM...")
                 break
 
@@ -242,4 +257,6 @@ def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax):
             ax.clear()
             ax.set_facecolor(plt.cm.Blues(.2))
 
-    return organisms
+    count += settings['pop_size']
+
+    return organisms, count, sum
