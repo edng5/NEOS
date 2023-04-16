@@ -80,7 +80,7 @@ def main(settings: dict) -> None:
         
         # print stats
         stats = get_stats(organisms, old_organisms)
-        print('> GEN:',gen,'BEST:',stats['BEST'],'AVG:',stats['AVG'],'WORST:',stats['WORST'],'TOTAL:',stats['COUNT'])
+        print('> GEN:',gen,'BEST:',stats['BEST'],'AVG:',stats['AVG'],'WORST:',stats['WORST'],'SURVIVED:',stats['SURVIVED'],'DIED:',stats['DIED'],'TOTAL:',stats['COUNT'])
 
         # organisms died off
         if len(organisms) == 0:
