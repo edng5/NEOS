@@ -1,4 +1,3 @@
-from collections import defaultdict
 import operator
 from matplotlib.animation import PillowWriter
 
@@ -13,7 +12,7 @@ from random import random
 from random import sample
 from random import uniform
 
-def evolve_gen(settings: dict, organisms_old: list, gen: int, count: int, sum: int) -> tuple:
+def evolve_gen(settings: dict, organisms_old: list, gen: int) -> list:
     ''' 
     Evolve next generation of NEOS by crossing over genes
     and then mutating them.
@@ -22,27 +21,10 @@ def evolve_gen(settings: dict, organisms_old: list, gen: int, count: int, sum: i
     :param gen: integer of current generation.
     :param count: number of organisms from previous gen.
     :param sum: number of food eaten from previous gen.
-    :returns: tuple of new organisms and statistics.
+    :returns: list of new organisms.
     '''
     elitism_num = int(floor(settings['elitism'] * settings['pop_size']))
     new_orgs = settings['pop_size'] - elitism_num
-
-    # Get stats for current generation
-    stats = defaultdict(int)
-    stats['SUM'] = sum
-    for organism in organisms_old:
-        if organism.fitness > stats['BEST'] or stats['BEST'] == 0:
-            stats['BEST'] = organism.fitness
-
-        if organism.fitness < stats['WORST'] or stats['WORST'] == 0:
-            stats['WORST'] = organism.fitness
-
-        stats['SUM'] += organism.fitness
-
-    stats['COUNT'] = count
-
-    stats['AVG'] = stats['SUM'] / stats['COUNT']
-
 
     # Elitism (Keep the best performing organisms)
     orgs_sorted = sorted(organisms_old, key=operator.attrgetter('fitness'), reverse=True)
@@ -95,7 +77,7 @@ def evolve_gen(settings: dict, organisms_old: list, gen: int, count: int, sum: i
 
         organisms_new.append(NEOS(settings, color=color_new, lifespan=lifespan, wih=wih_new, who=who_new, name='gen['+str(gen)+']-org['+str(w)+']'))
 
-    return organisms_new, stats
+    return organisms_new
 
 
 def reproduce(settings, organisms, organism1, organism2, gen, count) -> None:
@@ -156,15 +138,15 @@ def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax) ->
     :param gen: integer of current generation.
     :param fig: plot figure.
     :param ax: plot ax.
-    :returns: list of organisms, count of total organisms, sum of foods eaten
+    :returns: list of organisms, list of organisms that died
     '''
     metadata = dict(title='NEOS', artist='edng5')
     writer = PillowWriter(fps=15, metadata=metadata)
 
     
     total_time_steps = int(settings['gen_time'] / settings['dt'])
+    old_organisms = []
     count = 0
-    sum = 0
 
     # Save all frames into an animation
     with writer.saving(fig, 'gen_'+str(gen)+'.gif', 100):
@@ -227,8 +209,9 @@ def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax) ->
             # Old age organisms die off
             for organism in organisms:
                 if organism.too_old():
-                    sum += organism.fitness
+                    old_organisms.append(organism)
                     organisms.remove(organism)
+                    count += 1
 
             # End simulation if all organisms are gone        
             if len(organisms) == 0:
@@ -257,6 +240,4 @@ def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax) ->
             ax.clear()
             ax.set_facecolor(plt.cm.Blues(.2))
 
-    count += settings['pop_size']
-
-    return organisms, count, sum
+    return organisms, old_organisms
