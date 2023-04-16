@@ -10,18 +10,18 @@ from food import *
 from evo_sim import *
 from utils import *
 
-import random
+from random import randint
 
 settings = {}
 
 # Evolution Settings
 settings['pop_size'] = 50       # number of organisms
 settings['food_num'] = 100      # number of food particles
-settings['gens'] = 2            # number of generations 50
+settings['gens'] = 10            # number of generations 50
 settings['elitism'] = 0.20      # elitism (selection bias)
 settings['mutate'] = 0.10       # mutation rate
 settings['mature'] = 200        # time for organism to mature
-settings['lifespan_lower'] = 400      # starting lifespan lower bound
+settings['lifespan_lower'] = 500      # starting lifespan lower bound
 settings['lifespan_upper'] = 600      # starting lifespan upper bound
 
 # Simulation Setitngs
@@ -59,7 +59,7 @@ def main(settings: dict) -> None:
         wih_init = np.random.uniform(-1, 1, (settings['hidden_nodes'], settings['inner_nodes']))     # mlp weights (input -> hidden)
         who_init = np.random.uniform(-1, 1, (settings['outer_nodes'], settings['hidden_nodes']))     # mlp weights (hidden -> output)
 
-        lifespan = random.randint(settings['lifespan_lower'], settings['lifespan_upper']) 
+        lifespan = randint(settings['lifespan_lower'], settings['lifespan_upper']) 
         organisms.append(NEOS(settings, 'lightgreen', lifespan, wih_init, who_init, name='gen[0]-org['+str(i)+']'))
 
     # Loop through each generation
@@ -72,18 +72,18 @@ def main(settings: dict) -> None:
         fig.set_size_inches(9.6, 5.4)
         ax.set_facecolor(plt.cm.Blues(.2))
         
-        organisms = simulate(settings, organisms, foods, gen, fig, ax)
+        organisms, count, sum = simulate(settings, organisms, foods, gen, fig, ax)
 
         # organisms died off
         if len(organisms) == 0:
-            print("DONE SIMULATING GEN "+ str(gen)+".")
+            print("DONE SIMULATING GEN "+ str(gen)+".\n")
             break
 
         # add next generation of organisms
-        organisms, stats = evolve_gen(settings, organisms, gen)
-        print('> GEN:',gen,'BEST:',stats['BEST'],'AVG:',stats['AVG'],'WORST:',stats['WORST'])
+        organisms, stats = evolve_gen(settings, organisms, gen, count, sum)
+        print('> GEN:',gen,'BEST:',stats['BEST'],'AVG:',stats['AVG'],'WORST:',stats['WORST'],'TOTAL:',stats['COUNT'])
 
-        print("DONE SIMULATING GEN "+ str(gen)+".")
+        print("DONE SIMULATING GEN "+ str(gen)+".\n")
 
 
 if __name__ == "__main__":
