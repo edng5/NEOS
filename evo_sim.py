@@ -35,7 +35,7 @@ def evolve_gen(settings: dict, organisms_old: list, gen: int) -> list:
         wih_init = np.random.uniform(-1, 1, (settings['hidden_nodes'], settings['inner_nodes']))     # mlp weights (input -> hidden)
         who_init = np.random.uniform(-1, 1, (settings['outer_nodes'], settings['hidden_nodes']))     # mlp weights (hidden -> output)
         lifespan = randint(settings['lifespan_lower'], settings['lifespan_upper']) 
-        organisms_new.append(NEOS(settings, 'lightgreen', lifespan, None, None, wih_init, who_init, name='gen[0]-org['+str(i)+']', gen=0))
+        organisms_new.append(NEOS(settings, 'lightgreen', lifespan, None, None, wih_init, who_init, name='gen[0]-org['+str(0)+']', gen=0))
 
     # Add top surviving NEOS
     for i in range(0, elitism_num):
