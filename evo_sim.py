@@ -74,7 +74,7 @@ def evolve_gen(settings: dict, organisms_old: list, gen: int) -> list:
         # Mutate: lifespan
         lifespan = randint(settings['lifespan_lower'], settings['lifespan_upper'])
 
-        organisms_new.append(NEOS(settings, color=color_new, lifespan=lifespan, wih=wih_new, who=who_new, name='gen['+str(gen)+']-org['+str(w)+']'))
+        organisms_new.append(NEOS(settings, color=color_new, lifespan=lifespan, x=None, y=None, wih=wih_new, who=who_new, name='gen['+str(gen)+']-org['+str(w)+']'))
 
     return organisms_new
 
@@ -124,7 +124,7 @@ def reproduce(settings, organisms, organism1, organism2, gen, count) -> None:
         # Mutate: lifespan
         lifespan = randint(settings['lifespan_lower'], settings['lifespan_upper'])
 
-        organisms.append(NEOS(settings, color=color_new, lifespan=lifespan, wih=wih_new, who=who_new, name='gen['+str(gen)+']-org['+str(count)+']'))
+        organisms.append(NEOS(settings, color=color_new, lifespan=lifespan, x=organism1.x, y=organism1.y, wih=wih_new, who=who_new, name='gen['+str(gen)+']-org['+str(count)+']'))
 
 
 def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax) -> tuple:
