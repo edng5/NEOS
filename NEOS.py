@@ -15,10 +15,16 @@ class NEOS():
     '''
     Class for simple organisms called NEOS.
     '''
-    def __init__(self, settings, color='lightgreen', lifespan=120, wih=None, who=None, name=None):
+    def __init__(self, settings, color='lightgreen', lifespan=120, x=None, y=None, wih=None, who=None, name=None):
 
-        self.x = uniform(settings['x_min'], settings['x_max'])  # position (x)
-        self.y = uniform(settings['y_min'], settings['y_max'])  # position (y)
+        if x:
+            self.x = x
+        else:
+            self.x = uniform(settings['x_min'], settings['x_max'])  # position (x)
+        if y:
+            self.y = y
+        else:
+            self.y = uniform(settings['y_min'], settings['y_max'])  # position (y)
 
         self.r = uniform(0,360)                 # orientation   [0, 360]
         self.v = uniform(0,settings['v_max'])   # velocity      [0, v_max]
