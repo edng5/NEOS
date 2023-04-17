@@ -1,9 +1,11 @@
 # NEOS (Neuro Evolution Organism Simulator) by Edward Ng
 #
 # Evolution simulator using NEAT algorithm. Tries to observe a population
-# of simple organisms (NEOS) learning to eat food. The fittest of the generation
-# will carry genes for the next generation.
-# 4/2/2023
+# of simple organisms (NEOS) learning to eat food. The NEOS can reproduce
+# within a generation to create offspring of shared genes. By the end of 
+# each generation sim, the fittest NEOS will carry the genes 
+# for the next generation.
+# 4/17/2023
 
 from NEOS import *
 from food import *
@@ -15,9 +17,9 @@ from random import randint
 settings = {}
 
 # Evolution Settings
-settings['pop_size'] = 50       # initial number of organisms
+settings['pop_size'] = 64       # initial number of organisms
 settings['food_num'] = 100      # number of food particles
-settings['gens'] = 10            # number of generations 50
+settings['gens'] = 10            # number of generations
 settings['elitism'] = 0.20      # elitism (selection bias)
 settings['mutate'] = 0.10       # mutation rate
 settings['mature'] = 200        # time for organism to mature (in total time steps)
@@ -38,8 +40,6 @@ settings['x_min'] = -2.0        # experiment western border
 settings['x_max'] =  2.0        # experiment eastern border
 settings['y_min'] = -2.0        # experiment southern border
 settings['y_max'] =  2.0        # experiment northern border
-
-settings['plot'] = True        # plot final generation?
 
 # Organism Neural Net Settings
 settings['inner_nodes'] = 1          # number of input nodes
@@ -63,7 +63,7 @@ def main(settings: dict) -> None:
         who_init = np.random.uniform(-1, 1, (settings['outer_nodes'], settings['hidden_nodes']))     # mlp weights (hidden -> output)
 
         lifespan = randint(settings['lifespan_lower'], settings['lifespan_upper']) 
-        organisms.append(NEOS(settings, 'lightgreen', lifespan, None, None, wih_init, who_init, name='gen[0]-org['+str(i)+']'))
+        organisms.append(NEOS(settings, 'lightgreen', lifespan, None, None, wih_init, who_init, name='gen[0]-org['+str(i)+']', gen=0))
 
     # Loop through each generation
     for gen in range(0, settings['gens']):
@@ -80,7 +80,7 @@ def main(settings: dict) -> None:
         
         # print stats
         stats = get_stats(organisms, old_organisms)
-        print('> GEN:',gen,'BEST:',stats['BEST'],'AVG:',stats['AVG'],'WORST:',stats['WORST'],'SURVIVED:',stats['SURVIVED'],'DIED:',stats['DIED'],'TOTAL:',stats['COUNT'])
+        print('> GEN:',gen,'BEST:',stats['BEST'],'AVG:',stats['AVG'],'WORST:',stats['WORST'],'SURVIVED:',stats['SURVIVED'],'DIED:',stats['DIED'],'TOTAL NEOS:',stats['COUNT'],'FOOD EATEN:',stats['SUM'])
 
         # organisms died off
         if len(organisms) == 0:
