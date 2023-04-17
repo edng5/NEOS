@@ -63,7 +63,7 @@ def main(settings: dict) -> None:
         who_init = np.random.uniform(-1, 1, (settings['outer_nodes'], settings['hidden_nodes']))     # mlp weights (hidden -> output)
 
         lifespan = randint(settings['lifespan_lower'], settings['lifespan_upper']) 
-        organisms.append(NEOS(settings, 'lightgreen', lifespan, wih_init, who_init, name='gen[0]-org['+str(i)+']'))
+        organisms.append(NEOS(settings, 'lightgreen', lifespan, None, None, wih_init, who_init, name='gen[0]-org['+str(i)+']'))
 
     # Loop through each generation
     for gen in range(0, settings['gens']):
