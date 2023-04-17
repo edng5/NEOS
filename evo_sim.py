@@ -24,12 +24,22 @@ def evolve_gen(settings: dict, organisms_old: list, gen: int) -> list:
     :returns: list of new organisms.
     '''
     # Elitism (Keep the best performing organisms)
-    elitism_num = int(floor(settings['elitism'] * len(organisms_old)))
+    elitism_num = int(floor(settings['elitism'] * settings['pop_size']))
     orgs_sorted = sorted(organisms_old, key=operator.attrgetter('fitness'), reverse=True)
     organisms_new = []
+    if len(organisms_old) < elitism_num:
+        elitism_num = len(organisms_old)
 
+    # Add a gen 0 NEOS to get pairs for new generation
+    if elitism_num % 2 != 0:
+        wih_init = np.random.uniform(-1, 1, (settings['hidden_nodes'], settings['inner_nodes']))     # mlp weights (input -> hidden)
+        who_init = np.random.uniform(-1, 1, (settings['outer_nodes'], settings['hidden_nodes']))     # mlp weights (hidden -> output)
+        lifespan = randint(settings['lifespan_lower'], settings['lifespan_upper']) 
+        organisms_new.append(NEOS(settings, 'lightgreen', lifespan, None, None, wih_init, who_init, name='gen[0]-org['+str(i)+']', gen=0))
+
+    # Add top surviving NEOS
     for i in range(0, elitism_num):
-        organisms_new.append(NEOS(settings, wih=orgs_sorted[i].wih, who=orgs_sorted[i].who, name=orgs_sorted[i].name))
+        organisms_new.append(NEOS(settings, color=orgs_sorted[i].color, lifespan=orgs_sorted[i].lifespan, wih=orgs_sorted[i].wih, who=orgs_sorted[i].who, name=orgs_sorted[i].name, gen=orgs_sorted[i].gen))
 
     # Generate new organisms
     num_new_orgs = settings['pop_size'] - elitism_num
@@ -69,17 +79,18 @@ def evolve_gen(settings: dict, organisms_old: list, gen: int) -> list:
                 if who_new[index_row][index_col] < -1: who_new[index_row][index_col] = -1
 
         # Mutate: Color
-        color_new = pick_color(gen)
+        next_gen = gen + 1
+        color_new = pick_color(next_gen)
 
         # Mutate: lifespan
         lifespan = randint(settings['lifespan_lower'], settings['lifespan_upper'])
 
-        organisms_new.append(NEOS(settings, color=color_new, lifespan=lifespan, x=None, y=None, wih=wih_new, who=who_new, name='gen['+str(gen)+']-org['+str(w)+']'))
+        organisms_new.append(NEOS(settings, color=color_new, lifespan=lifespan, x=None, y=None, wih=wih_new, who=who_new, name='gen['+str(gen)+']-org['+str(w)+']', gen=next_gen))
 
     return organisms_new
 
 
-def reproduce(settings, organisms, organism1, organism2, gen, count) -> None:
+def reproduce(settings: dict, organisms: list, organism1, organism2, gen: int, count: int) -> None:
     '''
     Reproduction of two organisms to create an organism with crossed 
     genes of the parents.
@@ -119,12 +130,13 @@ def reproduce(settings, organisms, organism1, organism2, gen, count) -> None:
             if who_new[index_row][index_col] < -1: who_new[index_row][index_col] = -1
 
         # Mutate: Color
-        color_new = pick_color(gen)
+        next_gen = max([organism1.gen, organism2.gen]) + 1
+        color_new = pick_color(next_gen)
 
         # Mutate: lifespan
         lifespan = randint(settings['lifespan_lower'], settings['lifespan_upper'])
 
-        organisms.append(NEOS(settings, color=color_new, lifespan=lifespan, x=organism1.x, y=organism1.y, wih=wih_new, who=who_new, name='gen['+str(gen)+']-org['+str(count)+']'))
+        organisms.append(NEOS(settings, color=color_new, lifespan=lifespan, x=organism1.x, y=organism1.y, wih=wih_new, who=who_new, name='gen['+str(gen)+']-org['+str(count)+']', gen=next_gen))
 
 
 def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax) -> tuple:
@@ -151,11 +163,10 @@ def simulate(settings: dict, organisms: list, foods: list, gen: int, fig, ax) ->
     with writer.saving(fig, 'gen_'+str(gen)+'.gif', 100):
         # Loop through the number of time steps
         
-        for t_step in range(0, total_time_steps, 1):
+        for _ in range(0, total_time_steps, 1):
 
             # Plot frames
-            if settings['plot']==True: # and gen==settings['gens']-1:
-                plot_frame(settings, organisms, foods, gen, ax)
+            plot_frame(settings, organisms, foods, gen, ax)
 
             # Update fitness function
             for food in foods:
