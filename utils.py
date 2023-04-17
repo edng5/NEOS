@@ -6,19 +6,19 @@ from random import randint
 
 from collections import defaultdict
 
-def dist(x1,y1,x2,y2):
+def dist(x1: float, y1: float, x2: float, y2: float) -> float:
     '''
     Calculate distance.
-    :param x1:
-    :param y1:
-    :param x2:
-    :param y2: 
+    :param x1: x position of target 1
+    :param y1: y position of target 1
+    :param x2: x position of target 2
+    :param y2: y position of target 2
     :returns: distance in float.
     '''
     return sqrt((x2-x1)**2 + (y2-y1)**2)
 
 
-def calc_heading(organism, food):
+def calc_heading(organism, food) -> float:
     '''
     Calculate the heading of organism to food
     particle.
@@ -34,22 +34,27 @@ def calc_heading(organism, food):
     return theta_d / 180
 
 
-def pick_color(gen):
+def pick_color(gen: int) -> str:
     '''
     Pick color for organism based on generation. Randomize color if generation exceeds mapping.
     :param gen: int of generation.
     :return: string of color picked.
     '''
-    color_mapping = {0: 'lightgreen', 1: 'forestgreen', 2: 'darkgreen', 3: 'mediumseagreen', 4: 'mediumaquamarine', 5: 'mintcream'}
-    # if not gen in color_mapping:
-    #     random_num = randint(0, 5) #148
-    #     return color_mapping[random_num]
-    # return color_mapping[gen]
-    random_num = randint(0, 5)
-    return color_mapping[random_num]
+    # colors map to 10 generations and an albino variant
+    color_mapping = {-1: 'mintcream', 0: 'lightgreen', 1: 'seagreen', 2: 'darkgreen', 3: 'darkolivegreen', 4: 'peru', 5: 'lightcoral', 6: 'orangered', 7: 'firebrick', 8: 'darkred', 9: 'black'}
+
+    # chance of albino NEOS
+    random_num = randint(0, 1000)
+    if random_num == 5:
+        return color_mapping[-1]
+
+    if not gen in color_mapping:
+        random_num = randint(0, 9)
+        return color_mapping[random_num]
+    return color_mapping[gen]
     
 
-def boundary_fitness(organisms, percentage) -> int:
+def boundary_fitness(organisms: list, percentage: float) -> int:
     '''
     Find boundary fitness rank for top percentile of organisms.
     :param organisms: list of organisms.
@@ -66,7 +71,7 @@ def boundary_fitness(organisms, percentage) -> int:
     return fitness_list[idx]
 
 
-def get_stats(organisms, old_organisms):
+def get_stats(organisms: list, old_organisms: list) -> dict:
     '''
     Get stats of simulation.
     '''
