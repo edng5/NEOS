@@ -10,7 +10,7 @@ class food():
         self.energy = 1
 
 
-    def respawn(self,settings: dict) -> None:
+    def respawn(self, settings: dict) -> None:
         '''
         Respawn food in random location within experiment boundaries.
         :param settings: simulation configurations.
