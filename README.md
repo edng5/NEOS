@@ -11,7 +11,7 @@ for the next generation.
 
 # Experiment Results
 
-Note: Due to randomness, results are not always the same.
+Note: Due to being stochastic in nature, results are not always the same.
 
 ![](preview/gen_0.gif)
 
