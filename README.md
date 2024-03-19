@@ -2,6 +2,7 @@
 # by Edward Ng (2023)
 
 Original Copyright (c) 2017 Nathan Rooy
+
 Modified Copyright Edward Ng 2023
 
 Permission is hereby granted anyone is allowed to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software without charge.
