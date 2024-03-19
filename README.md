@@ -13,7 +13,10 @@ within a generation to create offspring of shared genes. By the end of
 each generation sim, the fittest NEOS will carry the genes 
 for the next generation.
 
-> Uses NumPy and Matplotlib
+The reproduction of NEOS is done through crossover and mutation of the two parents during intersection in the environemnt. Only individuals of high fitness are able to mate or 
+else they will be rejected. In addition, once NEOS become too old they will die off. This poses possible obstacles to the success of the generation through spatial constraints, time, and elitism. 
+It is observed that the average fitness plateaus at generation 4 and in generation 6, the entire population dies off due to old age. The NEOS could have possibly reached a local optimum in terms 
+of ability to eat food and once age and distance between fit individuals became too big, the ecosystem collapsed, leading to the end of the simulation. 
 
 # Experiment Results
 
