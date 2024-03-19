@@ -1,11 +1,11 @@
 # NEOS (Neuro Evolution Organism Simulator)
 # by Edward Ng (2023)
 
-Original Copyright (c) 2017 Nathan Rooy
+> Original Copyright (c) 2017 Nathan Rooy
 
-Modified Copyright Edward Ng 2023
+> Modified Copyright Edward Ng 2023
 
-Permission is hereby granted anyone is allowed to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software without charge.
+> Permission is hereby granted anyone is allowed to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software without charge.
 
 An evolution simulator using NEAT algorithm. Tries to observe a population
 of simple organisms (NEOS) learning to eat food. The NEOS can reproduce
